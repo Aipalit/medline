@@ -1,9 +1,6 @@
-package com.medline.application;
+package com.medline.application.model;
 
 import java.time.LocalDateTime;
-
-import com.medline.application.model.Paciente;
-import com.medline.application.model.TipoAtendimento;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

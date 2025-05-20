@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.medline.application.FilaDeEspera;
+import com.medline.application.model.FilaDeEspera;
 
 @Repository
 public interface FilaDeEsperaRepository extends JpaRepository<FilaDeEspera, Integer> {
