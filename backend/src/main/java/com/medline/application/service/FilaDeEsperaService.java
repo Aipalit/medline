@@ -1,5 +1,6 @@
 package com.medline.application.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +30,7 @@ public class FilaDeEsperaService {
         fila.setPaciente(paciente);
         fila.setTipoAtendimento(tipoAtendimento);
         fila.setStatus("AGUARDANDO");
+        fila.setDataEntrada(LocalDateTime.now());
         return filaDeEsperaRepository.save(fila);
 
     }

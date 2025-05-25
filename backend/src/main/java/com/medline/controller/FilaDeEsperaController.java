@@ -1,0 +1,73 @@
+package com.medline.controller;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import com.medline.application.dto.AdicionarNaFilaResquest;
+import com.medline.application.model.FilaDeEspera;
+import com.medline.application.model.Paciente;
+import com.medline.application.model.TipoAtendimento;
+import com.medline.application.service.FilaDeEsperaService;
+import com.medline.application.service.PacienteService;
+import com.medline.application.service.TipoAtendimentoService;
+
+@RestController
+@RequestMapping("/api/filas")
+public class FilaDeEsperaController {
+
+    @Autowired
+    private FilaDeEsperaService filaDeEsperaService;
+
+    @Autowired
+    private PacienteService pacienteService;
+
+    @Autowired
+    private TipoAtendimentoService tipoAtendimentoService;
+
+    @GetMapping
+    public ResponseEntity<List<FilaDeEspera>> listaFilasDeEspera() {
+        List<FilaDeEspera> filas = filaDeEsperaService.listaFilaDeEspera();
+        return new ResponseEntity<>(filas, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<FilaDeEspera> buscarFilaDeEsperaporId(@PathVariable Integer id) {
+        Optional<FilaDeEspera> fila = filaDeEsperaService.buscarFilaDeEsperaPorId(id);
+        return fila.map(f -> new ResponseEntity<>(f, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    /**
+     * Endpoint para adicionar um paciente a uma fila de espera.
+     * 
+     * @param request Um objeto JSON contendo 'pacienteId' e 'tipoAtendimentoId'.
+     * @return A FilaDeEspera criada ou um erro se os IDs não forem encontrados.
+     */
+
+    @PostMapping
+    public ResponseEntity<FilaDeEspera> adicionarPacienteNaFila(@RequestBody AdicionarNaFilaResquest request) {
+        Optional<Paciente> pacienteOpt = pacienteService.buscarPacientePorId(request.getPacienteId());
+
+        Optional<TipoAtendimento> tipoAtendimentoOpt = tipoAtendimentoService
+                .buscarTipoAtendimentoPorId(request.getTipoAtendimentoId());
+        if (pacienteOpt.isPresent() && tipoAtendimentoOpt.isPresent()) {
+            FilaDeEspera novaFila = filaDeEsperaService.adicionarPacienteNaFila(pacienteOpt.get(),
+                    tipoAtendimentoOpt.get());
+            return new ResponseEntity<>(novaFila, HttpStatus.CREATED);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+    }
+
+}
