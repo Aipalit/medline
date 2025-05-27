@@ -1,4 +1,4 @@
-package com.medline.controller;
+package com.medline.application.controller;
 
 import java.util.List;
 import java.util.Optional;

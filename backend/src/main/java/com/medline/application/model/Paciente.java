@@ -1,6 +1,8 @@
 package com.medline.application.model;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -22,15 +24,13 @@ public class Paciente {
     @Column(nullable = false)
     private String nome;
 
-    private Integer idade;
-
     @Column(length = 1)
     private String sexo;
 
     @Column(unique = true, length = 20)
     private String rg;
 
-    @Column(nullable = false, unique = true, length = 20)
+    @Column(nullable = false, unique = true, length = 14)
     private String cpf;
 
     @Column(length = 20)
@@ -38,4 +38,24 @@ public class Paciente {
 
     @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime dataCadastro;
+
+    @Column(name = "data_nascimento")
+    private LocalDate dataNascimento;
+
+    /**
+     * Calcula e retorna a idade atual do paciente com base na data de nascimento.
+     * Este método NÃO é persistido no banco de dados.
+     * 
+     * @return A idade do paciente em anos, ou null se a data de nascimento não
+     *         estiver definida.
+     */
+
+    @Transient
+    public Integer getIdade() {
+        if (this.dataNascimento == null) {
+            return null;
+        }
+        return Period.between(this.dataNascimento, LocalDate.now()).getYears();
+    }
+
 }

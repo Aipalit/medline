@@ -1,4 +1,4 @@
-package com.medline.controller;
+package com.medline.application.controller;
 
 import java.util.List;
 import java.util.Optional;
@@ -68,6 +68,34 @@ public class FilaDeEsperaController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
+    }
+
+    /**
+     * Inicia o atendimento para uma entrada específica da fila.
+     * Muda o status para EM_ATENDIMENTO e define a data/hora de início.
+     * 
+     * @param id O ID da FilaDeEspera.
+     * @return A FilaDeEspera atualizada ou NOT_FOUND.
+     */
+    @PostMapping("/{id}/iniciar")
+    public ResponseEntity<FilaDeEspera> iniciarAtendimento(@PathVariable Integer id) {
+        try {
+            FilaDeEspera filaAtualizada = filaDeEsperaService.iniciarAtendimento(id);
+            return new ResponseEntity<>(filaAtualizada, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            // Se o serviço lançar uma exceção (não encontrou), retorna 404.
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PostMapping("/{id}/finalizar")
+    public ResponseEntity<FilaDeEspera> finalizarAtendimento(@PathVariable Integer id) {
+        try {
+            FilaDeEspera filaAtualizada = filaDeEsperaService.finalizarAtendimento(id);
+            return new ResponseEntity<>(filaAtualizada, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
 }

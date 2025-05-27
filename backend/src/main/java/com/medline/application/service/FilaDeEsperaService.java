@@ -53,9 +53,9 @@ public class FilaDeEsperaService {
         Optional<FilaDeEspera> filaOptional = filaDeEsperaRepository.findById(idFila);
         return filaOptional.map(fila -> {
             fila.setStatus("CONCLUIDO");
-            fila.setDataInicioAtendimento(java.time.LocalDateTime.now());
+            fila.setDataFimAtendimento(java.time.LocalDateTime.now());
             return filaDeEsperaRepository.save(fila);
-        }).orElseThrow(() -> new RuntimeException("Fila de espera com ID " + idFila + "não encontrado"));
+        }).orElseThrow(() -> new RuntimeException("Fila de espera com ID " + idFila + "não encontrada"));
     }
 
     public void removerDaFila(Integer id) {
