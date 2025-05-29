@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.time.Period;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,6 +23,7 @@ public class Paciente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @NotBlank(message = "O nome não pode está em branco")
     @Column(nullable = false)
     private String nome;
 
@@ -30,6 +33,7 @@ public class Paciente {
     @Column(unique = true, length = 20)
     private String rg;
 
+    @NotBlank(message = "O CPF não pode está em branco")
     @Column(nullable = false, unique = true, length = 14)
     private String cpf;
 
@@ -39,6 +43,7 @@ public class Paciente {
     @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime dataCadastro;
 
+    @NotNull(message = "A Data de Nascimento não pode ser Nula")
     @Column(name = "data_nascimento")
     private LocalDate dataNascimento;
 
