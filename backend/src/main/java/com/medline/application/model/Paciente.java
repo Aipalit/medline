@@ -4,9 +4,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
 
+import com.medline.application.validation.CPF;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -34,6 +37,8 @@ public class Paciente {
     private String rg;
 
     @NotBlank(message = "O CPF não pode está em branco")
+    @Pattern(regexp = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}", message = "O formato do CPF deve ser XXX.XXX.XXX-XX.")
+    @CPF
     @Column(nullable = false, unique = true, length = 14)
     private String cpf;
 
