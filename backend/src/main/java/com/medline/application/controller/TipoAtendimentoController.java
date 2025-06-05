@@ -20,6 +20,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.medline.application.model.TipoAtendimento;
 import com.medline.application.service.TipoAtendimentoService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+
+@Tag(name = "Tipo de Atendimento", description = "API Responsável para gerencimaneto dos tipos de atendimento")
 @RestController
 @RequestMapping("/api/tipos-atendimento")
 public class TipoAtendimentoController {
@@ -32,6 +39,7 @@ public class TipoAtendimentoController {
         return new ResponseEntity<>(tipos, HttpStatus.OK);
     }
 
+    @Operation(description = "Busca o tipo de atendimento por ID")
     @GetMapping("/{id}")
     public ResponseEntity<TipoAtendimento> buscarTipoAtendimentoPorId(@PathVariable Integer id) {
         Optional<TipoAtendimento> tipo = tipoAtendimentoService.buscarTipoAtendimentoPorId(id);
@@ -39,8 +47,13 @@ public class TipoAtendimentoController {
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @Operation(summary = "Cadastra novo tipo de atendimento", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Objeto TipoAtendimento para cadastro", required = true))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Tipo de atendimento cadastrado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos fornecidos")
+    })
     @PostMapping
-    public ResponseEntity<TipoAtendimento> salvarTipoAtendimento(@RequestBody TipoAtendimento tipoAtendimento) {
+    public ResponseEntity<TipoAtendimento> salvarTipoAtendimento(@Valid @RequestBody TipoAtendimento tipoAtendimento) {
         TipoAtendimento novoTipo = tipoAtendimentoService.salvarTipoAtendimento(tipoAtendimento);
         return new ResponseEntity<>(novoTipo, HttpStatus.CREATED);
     }

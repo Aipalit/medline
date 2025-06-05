@@ -58,7 +58,7 @@ public class PacienteController {
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @Operation(summary = "Cadastra um novo paciente")
+    @Operation(summary = "Cadastra um novo paciente", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = " Paciente para ser cadastrado. CPF deve ser único.", required = true, content = @Content(schema = @Schema(implementation = Paciente.class))))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Paciente cadastrado com sucesso", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Paciente.class))),
             @ApiResponse(responseCode = "400", description = "Dados inválidos fornecidos para o paciente", content = @Content)
@@ -66,20 +66,20 @@ public class PacienteController {
 
     @PostMapping
     public ResponseEntity<Paciente> salvarPaciente(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Objeto Paciente para ser cadastrado. CPF deve ser único.", required = true, content = @Content(schema = @Schema(implementation = Paciente.class))) @Valid @RequestBody Paciente paciente) {
+            @Valid @RequestBody Paciente paciente) {
 
         Paciente novoPaciente = pacienteService.salvarPaciente(paciente);
         return new ResponseEntity<>(novoPaciente, HttpStatus.CREATED);
 
     }
 
-    @Operation(summary = "Atualizar paciente existente")
+    @Operation(summary = "Atualizar paciente existente", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Objeto Paciente com os dados atualizados.", required = true))
     // Adicionar @ApiResponses similares para PUT e DELETE futuramente
 
     @PutMapping("/{id}")
     public ResponseEntity<Paciente> atualizarPaciente(
             @Parameter(description = "ID do paciente a ser atualizado", required = true) @PathVariable Integer id,
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Objeto Paciente com os dados atualizados.", required = true) @Valid @RequestBody Paciente pacienteAtualizado) {
+            @Valid @RequestBody Paciente pacienteAtualizado) {
         Optional<Paciente> pacienteExistente = pacienteService.buscarPacientePorId(id);
         if (pacienteExistente.isPresent()) {
             pacienteAtualizado.setId(id);
