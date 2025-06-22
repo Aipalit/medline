@@ -1,5 +1,8 @@
 package com.medline.application.controller;
 
+import com.medline.application.dto.PacienteRequestDTO;
+import com.medline.application.dto.PacienteResponseDTO;
+import com.medline.application.mapper.PacienteMapper;
 import com.medline.application.model.Paciente;
 import com.medline.application.service.PacienteService;
 
@@ -10,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+// import io.swagger.v3.oas.annotations.Parameter;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,21 +32,25 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Pacientes", description = "gerenciamento de pacientes")
+@Tag(name = "Pacientes", description = "Gerenciamento de Pacientes")
 @RestController
 @RequestMapping("/api/pacientes")
 public class PacienteController {
 
     @Autowired
     private PacienteService pacienteService;
+    @Autowired
+    private PacienteMapper pacienteMapper;
 
     @Operation(summary = "Lista todos os pacientes cadastrados")
     @ApiResponse(responseCode = "200", description = "Lista de pacientes retornada com sucesso", content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class)))
 
     @GetMapping
-    public ResponseEntity<List<Paciente>> listarPacientes() {
+    public ResponseEntity<List<PacienteResponseDTO>> listarPacientes() {
         List<Paciente> pacientes = pacienteService.listarPacientes();
-        return new ResponseEntity<>(pacientes, HttpStatus.OK);
+
+        List<PacienteResponseDTO> responseDTOs = pacienteMapper.tResponseDTOList(pacientes);
+        return new ResponseEntity<>(responseDTOs, HttpStatus.OK);
     }
 
     @Operation(description = "Busca um paciente pelo seu ID")
@@ -51,10 +59,11 @@ public class PacienteController {
             @ApiResponse(responseCode = "404", description = "Paciente não encontrado", content = @Content)
     })
     @GetMapping("/{id}")
-    @Parameter(description = "ID do paciente a ser buscado.", example = "1", required = true)
-    public ResponseEntity<Paciente> buscarPacientePorId(@PathVariable Integer id) {
+
+    public ResponseEntity<PacienteResponseDTO> buscarPacientePorId(
+            @Parameter(description = "ID do paciente a ser buscado", example = "1", required = true) @PathVariable Integer id) {
         Optional<Paciente> paciente = pacienteService.buscarPacientePorId(id);
-        return paciente.map(p -> new ResponseEntity<>(p, HttpStatus.OK))
+        return paciente.map(pacienteMapper::toResponseDTO).map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
@@ -65,29 +74,39 @@ public class PacienteController {
     })
 
     @PostMapping
-    public ResponseEntity<Paciente> salvarPaciente(
-            @Valid @RequestBody Paciente paciente) {
+    public ResponseEntity<PacienteResponseDTO> salvarPaciente(
+            @Valid @RequestBody PacienteRequestDTO requestDTO) {
 
-        Paciente novoPaciente = pacienteService.salvarPaciente(paciente);
-        return new ResponseEntity<>(novoPaciente, HttpStatus.CREATED);
+        // usando mapper para converter DTO -> entidade
+        Paciente novoPaciente = pacienteMapper.toEntity(requestDTO);
+        Paciente pacienteSalvo = pacienteService.salvarPaciente(novoPaciente);
 
+        // usando mapper pra converter entidade -> DTO resposta
+        PacienteResponseDTO responseDTO = pacienteMapper.toResponseDTO(pacienteSalvo);
+        return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
 
     @Operation(summary = "Atualizar paciente existente", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Objeto Paciente com os dados atualizados.", required = true))
     // Adicionar @ApiResponses similares para PUT e DELETE futuramente
 
     @PutMapping("/{id}")
-    public ResponseEntity<Paciente> atualizarPaciente(
-            @Parameter(description = "ID do paciente a ser atualizado", required = true) @PathVariable Integer id,
-            @Valid @RequestBody Paciente pacienteAtualizado) {
-        Optional<Paciente> pacienteExistente = pacienteService.buscarPacientePorId(id);
-        if (pacienteExistente.isPresent()) {
-            pacienteAtualizado.setId(id);
-            Paciente pacienteSalvo = pacienteService.salvarPaciente(pacienteAtualizado);
-            return new ResponseEntity<>(pacienteSalvo, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<PacienteResponseDTO> atualizarPaciente(
+            @PathVariable Integer id,
+            @Valid @RequestBody PacienteRequestDTO requestDTO) {
+
+        return pacienteService.buscarPacientePorId(id).map(pacienteExistente -> {
+
+            // Use o mapper para atualizar a entidade existente a partir do DTO
+
+            pacienteMapper.updateEntityFromDto(requestDTO, pacienteExistente);
+            Paciente pacienteSalvo = pacienteService.salvarPaciente(pacienteExistente);
+
+            // Use o mapper para converter a entidade salva para o DTO de resposta
+
+            PacienteResponseDTO responseDTO = pacienteMapper.toResponseDTO(pacienteSalvo);
+            return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+        }).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+
     }
 
     @Operation(summary = "Exclui um paciente pelo seu ID")
