@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.medline.application.dto.TipoAtendimentoRequestDTO;
+import com.medline.application.dto.TipoAtendimentoResponseDTO;
+import com.medline.application.mapper.TipoAtedimentoMapper;
 import com.medline.application.model.TipoAtendimento;
 import com.medline.application.service.TipoAtendimentoService;
 
@@ -33,17 +36,22 @@ public class TipoAtendimentoController {
     @Autowired
     private TipoAtendimentoService tipoAtendimentoService;
 
+    @Autowired
+    private TipoAtedimentoMapper tipoAtedimentoMapper;
+
     @GetMapping
-    public ResponseEntity<List<TipoAtendimento>> listarTiposAtendimento() {
+    public ResponseEntity<List<TipoAtendimentoResponseDTO>> listarTiposAtendimento() {
         List<TipoAtendimento> tipos = tipoAtendimentoService.listarTipoAtendimentos();
-        return new ResponseEntity<>(tipos, HttpStatus.OK);
+        List<TipoAtendimentoResponseDTO> responseDTOs = tipoAtedimentoMapper.toResponseDTOList(tipos);
+        return new ResponseEntity<>(responseDTOs, HttpStatus.OK);
     }
 
     @Operation(description = "Busca o tipo de atendimento por ID")
     @GetMapping("/{id}")
-    public ResponseEntity<TipoAtendimento> buscarTipoAtendimentoPorId(@PathVariable Integer id) {
-        Optional<TipoAtendimento> tipo = tipoAtendimentoService.buscarTipoAtendimentoPorId(id);
-        return tipo.map(t -> new ResponseEntity<>(t, HttpStatus.OK))
+    public ResponseEntity<TipoAtendimentoResponseDTO> buscarTipoAtendimentoPorId(@PathVariable Integer id) {
+        return tipoAtendimentoService.buscarTipoAtendimentoPorId(id)
+                .map(tipoAtedimentoMapper::toResponseDTO)
+                .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
@@ -53,21 +61,35 @@ public class TipoAtendimentoController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos fornecidos")
     })
     @PostMapping
-    public ResponseEntity<TipoAtendimento> salvarTipoAtendimento(@Valid @RequestBody TipoAtendimento tipoAtendimento) {
+    public ResponseEntity<TipoAtendimentoResponseDTO> salvarTipoAtendimento(
+            @Valid @RequestBody TipoAtendimentoRequestDTO requestDTO) {
+        TipoAtendimento tipoAtendimento = tipoAtedimentoMapper.toEntity(requestDTO);
         TipoAtendimento novoTipo = tipoAtendimentoService.salvarTipoAtendimento(tipoAtendimento);
-        return new ResponseEntity<>(novoTipo, HttpStatus.CREATED);
+        TipoAtendimentoResponseDTO responseDTO = tipoAtedimentoMapper.toResponseDTO(novoTipo);
+        return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
 
-    public ResponseEntity<TipoAtendimento> atualizarTipoAtendimento(@PathVariable Integer id,
-            @RequestBody TipoAtendimento tipoAtendimentoAtualizado) {
-        Optional<TipoAtendimento> tipoExistente = tipoAtendimentoService.buscarTipoAtendimentoPorId(id);
-        if (tipoExistente.isPresent()) {
-            tipoAtendimentoAtualizado.setId(id);
-            TipoAtendimento tipoSalvo = tipoAtendimentoService.salvarTipoAtendimento(tipoAtendimentoAtualizado);
-            return new ResponseEntity<>(tipoSalvo, HttpStatus.OK);
+    public ResponseEntity<TipoAtendimentoResponseDTO> atualizarTipoAtendimento(@PathVariable Integer id,
+            @RequestBody TipoAtendimentoRequestDTO requestDTO) {
+
+        // 1. Busque o Optional primeiro
+        Optional<TipoAtendimento> tipoExistenteOpt = tipoAtendimentoService.buscarTipoAtendimentoPorId(id);
+
+        // 2. Verifique se o Optional tem um valor
+        if (tipoExistenteOpt.isPresent()) {
+            // Se sim, pegue a entidade
+            TipoAtendimento tipoExistente = tipoExistenteOpt.get();
+            // Atualize a entidade com os dados do DTO
+            tipoAtedimentoMapper.updateEntityFromDto(requestDTO, tipoExistente);
+            // Salve a entidade atualizada
+            TipoAtendimento tipoSalvo = tipoAtendimentoService.salvarTipoAtendimento(tipoExistente);
+            // Crie e retorne a resposta de sucesso
+            TipoAtendimentoResponseDTO responseDTO = tipoAtedimentoMapper.toResponseDTO(tipoSalvo);
+            return new ResponseEntity<>(responseDTO, HttpStatus.OK);
         } else {
+            // Se não, retorne a resposta de não encontrado
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }

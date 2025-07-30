@@ -49,7 +49,7 @@ public class PacienteController {
     public ResponseEntity<List<PacienteResponseDTO>> listarPacientes() {
         List<Paciente> pacientes = pacienteService.listarPacientes();
 
-        List<PacienteResponseDTO> responseDTOs = pacienteMapper.tResponseDTOList(pacientes);
+        List<PacienteResponseDTO> responseDTOs = pacienteMapper.toResponseDTOList(pacientes);
         return new ResponseEntity<>(responseDTOs, HttpStatus.OK);
     }
 

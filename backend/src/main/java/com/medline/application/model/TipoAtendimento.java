@@ -8,8 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,13 +27,12 @@ public class TipoAtendimento {
     private Integer id;
 
     @Schema(description = "Nome do tipo de Atendimento.", example = "Cardiologista", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotBlank(message = "O tipo de Atendimento não pode ser vazio...")
-    @Size(max = 100, message = "O nome do tipo de atendimento não pode exceder 100 caracteres ")
+
     @Column(nullable = false, unique = true, length = 100)
     private String nome;
 
     @Schema(description = "Descrição detalhada do tipo de Atendimento", example = "Consulta de rotina para avaliação Cardio. ")
-    @Size(max = 1000, message = "A descrição não pode excerder 1000 caracteres.")
+
     @Column(columnDefinition = "TEXT")
     private String descricao;
 

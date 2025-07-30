@@ -26,10 +26,10 @@ public interface PacienteMapper {
     PacienteResponseDTO toResponseDTO(Paciente paciente);
 
     // Mapeia uma lista de Entidades para uma lista de DTOs de resposta
-    List<PacienteResponseDTO> tResponseDTOList(List<Paciente> pacientes);
+    List<PacienteResponseDTO> toResponseDTOList(List<Paciente> pacientes);
 
     // Atualiza uma entidade existente a partir de um DTO (para o método PUT)
-     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "dataCadastro", ignore = true)
     void updateEntityFromDto(PacienteRequestDTO dto, @MappingTarget Paciente paciente);
 }
