@@ -11,7 +11,7 @@ import com.medline.application.dto.TipoAtendimentoResponseDTO;
 import com.medline.application.model.TipoAtendimento;
 
 @Mapper(componentModel = "spring")
-public interface TipoAtedimentoMapper {
+public interface TipoAtendimentoMapper {
 
     @Mapping(target = "id", ignore = true)
     TipoAtendimento toEntity(TipoAtendimentoRequestDTO dto);

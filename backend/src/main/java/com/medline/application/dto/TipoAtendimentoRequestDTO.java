@@ -2,7 +2,9 @@ package com.medline.application.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 
+@Data
 public class TipoAtendimentoRequestDTO {
 
     @NotBlank(message = "O tipo de Atendimento não pode ser vazio...")

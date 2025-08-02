@@ -9,11 +9,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import com.medline.application.dto.AdicionarNaFilaResquest;
+import com.medline.application.dto.AdicionarNaFilaRequest; 
 import com.medline.application.model.FilaDeEspera;
 import com.medline.application.model.Paciente;
 import com.medline.application.model.TipoAtendimento;
@@ -46,20 +46,15 @@ public class FilaDeEsperaController {
         return fila.map(f -> new ResponseEntity<>(f, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
-
-    /**
-     * Endpoint para adicionar um paciente a uma fila de espera.
-     * 
-     * @param request Um objeto JSON contendo 'pacienteId' e 'tipoAtendimentoId'.
-     * @return A FilaDeEspera criada ou um erro se os IDs não forem encontrados.
-     */
-
+    
     @PostMapping
-    public ResponseEntity<FilaDeEspera> adicionarPacienteNaFila(@RequestBody AdicionarNaFilaResquest request) {
+    // 👇 CORREÇÃO NO PARÂMETRO DO MÉTODO
+    public ResponseEntity<FilaDeEspera> adicionarPacienteNaFila(@RequestBody AdicionarNaFilaRequest request) {
         Optional<Paciente> pacienteOpt = pacienteService.buscarPacientePorId(request.getPacienteId());
 
         Optional<TipoAtendimento> tipoAtendimentoOpt = tipoAtendimentoService
                 .buscarTipoAtendimentoPorId(request.getTipoAtendimentoId());
+                
         if (pacienteOpt.isPresent() && tipoAtendimentoOpt.isPresent()) {
             FilaDeEspera novaFila = filaDeEsperaService.adicionarPacienteNaFila(pacienteOpt.get(),
                     tipoAtendimentoOpt.get());
@@ -67,23 +62,14 @@ public class FilaDeEsperaController {
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-
     }
 
-    /**
-     * Inicia o atendimento para uma entrada específica da fila.
-     * Muda o status para EM_ATENDIMENTO e define a data/hora de início.
-     * 
-     * @param id O ID da FilaDeEspera.
-     * @return A FilaDeEspera atualizada ou NOT_FOUND.
-     */
     @PostMapping("/{id}/iniciar")
     public ResponseEntity<FilaDeEspera> iniciarAtendimento(@PathVariable Integer id) {
         try {
             FilaDeEspera filaAtualizada = filaDeEsperaService.iniciarAtendimento(id);
             return new ResponseEntity<>(filaAtualizada, HttpStatus.OK);
         } catch (RuntimeException e) {
-            // Se o serviço lançar uma exceção (não encontrou), retorna 404.
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
@@ -97,5 +83,4 @@ public class FilaDeEsperaController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-
 }
